@@ -46,9 +46,9 @@ static inline size_t FrameSize(io::Frame *frame) {
  */
 static void FrameParse(io::Frame *frame, const char *data, size_t len) {
   // create variables and empty out current
-  size_t offset = 0;
+  std::size_t offset = 0;
   int i, size, count = 0;
-  memset(frame, 0, sizeof(*frame));
+  std::memset(frame, 0, sizeof(*frame));
   
   // get frame first byte header info
   frame->fin  = (data[offset] & 0x80) != 0 ? 1 : 0;
@@ -65,7 +65,7 @@ static void FrameParse(io::Frame *frame, const char *data, size_t len) {
   if (count > 0) size = 0;
   while (count-- > 0)
     size |= (data[offset++] & 0xff) << (8 * count);
-  frame->len = (size_t)size;
+  frame->len = (std::size_t)size;
   
   // if masked, get mask from frame
   char mask[4];
@@ -73,16 +73,15 @@ static void FrameParse(io::Frame *frame, const char *data, size_t len) {
     for (i = 0; i < 4; i++)
       mask[i] = data[offset++];
   
-  // get payload and mask it if neccessary
-  char payload[size + 1] = {0};
-  for (i = 0; i < size; i++)
-    payload[i] = !frame->masked ? data[offset + i]
-      : data[offset + i] ^ mask[i % 4];
-      
-  // set frame data
+  // allocate frame payload
   free(frame->data);
-  frame->data = (char*)malloc(sizeof(char*));
-  memcpy(frame->data, payload, sizeof(payload));
+  frame->data = (char*)std::calloc(
+    size + 1, sizeof(char*));
+
+  // get payload and mask it if neccessary
+  for (i = 0; i < size; i++)
+    frame->data[i] = !frame->masked ? data[offset + i]
+      : data[offset + i] ^ mask[i % 4];
 }
 
 /**
@@ -91,7 +90,8 @@ static void FrameParse(io::Frame *frame, const char *data, size_t len) {
  * @param {char*} out the output of the dumped frame
  */
 static void FrameDump(io::Frame *frame, char *out) {
-  size_t i, offset = 0; // calculation variables
+  int i;                  // iteration variables
+  std::size_t offset = 0; // calculation variables
   
   // set first header byte
   out[offset] = (char)(frame->fin ? 0x80 : 0);
@@ -106,7 +106,7 @@ static void FrameDump(io::Frame *frame, char *out) {
     out[offset++] = (char)(masked | frame->len);
   } else if (frame->len >= 126 && frame->len < 65536) {
     out[offset++] = (char)(masked | 0x7e);
-    for (i = 8; i >= 9; i -= 8)
+    for (i = 8; i >= 0; i -= 8)
       out[offset++] = (char)((frame->len >> i) & 0xff);
   } else {
     out[offset++] = (char)(masked | 0x7f);
@@ -115,14 +115,17 @@ static void FrameDump(io::Frame *frame, char *out) {
   }
   
   // if frame masked, create mask
-  unsigned char mask[4] = { 0 };
-  for (i = 0; i < 4; i++) {
-    mask[i] = randByte();
-    out[offset++] = mask[i];
+  std::vector<unsigned char> mask;
+  if (frame->masked) {
+    mask.reserve(4);
+    for (i = 0; i < 4; i++) {
+      mask[i] = randByte();
+      out[offset++] = mask[i];
+    }
   }
   
   // add payload data
-  for (i = 0; i < frame->len; i++)
+  for (i = 0; i < (signed)frame->len; i++)
     out[offset + i] = (char)(!frame->masked ?
       frame->data[i] : (frame->data[i] ^ mask[i % 4]));
 }
@@ -151,7 +154,7 @@ void io::WebsockClient::Send(const std::string &data, unsigned opcode) {
   frame.masked = 1;
   frame.opcode = opcode;
   frame.data   = (char*)data.c_str();
-  frame.len    = strlen(frame.data);
+  frame.len    = std::strlen(frame.data);
 
   // convert frame to transferable data
   char buffer[FrameSize(&frame)] = { 0 };
@@ -190,6 +193,7 @@ bool io::WebsockClient::Connect(const std::string &url) {
 
     // handle websocket frames
     } else {
+
       FrameParse(&frame, &data[0], data.size());
 
       // handle nont continuation frams

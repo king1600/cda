@@ -232,6 +232,7 @@ int io::Loop::run() {
     polled = epoll_wait(epoll, events, MAXEVENTS, 10);
 
     // Iterate only through current timer tasks
+    size = tasks.size();
     for (i = 0; i < size && !tasks.empty(); i++) {
       promise = std::move(tasks.front());
       tasks.pop();

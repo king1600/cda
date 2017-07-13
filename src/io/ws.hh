@@ -50,6 +50,12 @@ namespace io {
       if (sock != nullptr)
         delete sock;
       sock = nullptr;
+      connected = false;
+    }
+
+    /** Connection State accessor */
+    inline const bool isConnected() const {
+      return connected;
     }
 
     // initialize the websocket client

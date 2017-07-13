@@ -9,7 +9,11 @@ namespace cda {
     io::Loop *loop;
     std::string token;  // the bots token
     ApiController api;  // the api handler
-    io::uint numShards; // the amount of shards to spawh
+    io::uint numShards; // the amount of shards to spawn
+
+    std::shared_ptr<User> user;
+    std::vector<std::shared_ptr<User>> users;
+    std::vector<std::shared_ptr<Guild>> guilds;
 
     // array of shards spawned
     std::vector<std::shared_ptr<Gateway>> shards;

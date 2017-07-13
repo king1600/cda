@@ -28,7 +28,7 @@ namespace cda {
   };
 
   static const std::string Lib = "cda";
-  static const std::string ApiVersion = "?v=5&encoding=json";
+  static const std::string ApiVersion = "?v=6&encoding=json";
   static const std::string Endpoint = "https://discordapp.com/api";
   static const std::string Url = "http://github.com/king1600/cda";
 
@@ -46,4 +46,22 @@ namespace cda {
     static const unsigned int HELLO              = 10;
     static const unsigned int HEARTBEAT_ACK      = 11;
   };
+
+  static inline const std::string OSName() {
+    #ifdef _WIN32
+      return "win32";
+    #elif _WIN64
+      return "win64";
+    #elif __linux__
+      return "linux";
+    #elif __APPLE__ || __MACH__
+      return "darwin";
+    #elif __unix || __unix__
+      return "unix";
+    #elif __FreeBSD__
+      return "freebsd";
+    #else
+      return "other";
+    #endif
+  }
 }
