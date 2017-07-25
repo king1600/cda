@@ -2,6 +2,7 @@
 A minimal c++ api wrapper for discord.
 Currently only supported on linux but forks for windows ports are welcome
 
+# WARNING: This project is discontinued and development is favored on Valk (https://github.com/king1600/Valk)
 ## Dependencies:
 * OpenSSL (libssl-dev)
 * Httpxx  (https://github.com/AndreLouisCaron/httpxx)
