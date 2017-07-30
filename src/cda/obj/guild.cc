@@ -2,6 +2,33 @@
 #include "user.hh"
 #include "channel.hh"
 
+class Role : public Item {
+  public:
+    inline Role() = default;
+    inline ~Role() = default;
+    Color color;
+    Guild *guild;
+    bool hoist;
+    bool managed;
+    bool mentionable;
+    std::string name;
+    Permissions perms;
+    unsigned int position;
+    void parse(io::json &data);
+  };
+
+  class Emoji : public Item {
+  public:
+    inline Emoji() = default;
+    inline ~Emoji() = default;
+    Guild *guild;
+    bool managed;
+    std::string name;
+    bool require_colons;
+    std::vector<Role> roles;
+    void parse(io::json &data);
+  };
+
 void cda::Emoji::parse(io::json &data) {
 
 }
